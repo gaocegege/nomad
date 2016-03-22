@@ -35,6 +35,7 @@ type FileRotator struct {
 	logger      *log.Logger
 	purgeCh     chan struct{}
 	doneCh      chan struct{}
+	closed      bool
 }
 
 // NewFileRotator returns a new file rotator
@@ -202,7 +203,10 @@ func (f *FileRotator) Close() {
 
 	// Stop the purge go routine
 	f.doneCh <- struct{}{}
-	close(f.purgeCh)
+	if !f.closed {
+		close(f.purgeCh)
+		f.closed = true
+	}
 }
 
 // purgeOldFiles removes older files and keeps only the last N files rotated for
